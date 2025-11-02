@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace IncadevUns\CoreDomain\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class CoreDomainCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'core-domain';
 
     public $description = 'My command';
 
