@@ -96,13 +96,71 @@ protected $fillable = [
 ];
 ```
 
+### 5. Run the Core Seeder
+
+Finally, run the package seeder to populate the database with essential data.
+
+```bash
+php artisan db:seed --class="IncadevUns\CoreDomain\Database\Seeders\IncadevSeeder"
+```
+
 ## Usage
 
-The primary purpose of this package is to provide a unified set of Eloquent models and traits.
+The primary purpose of this package is to provide a **centralized core domain** (Eloquent models and migrations) ready for immediate use. This ensures that all teams and applications within the organization share the same data structure and business logic, **preventing you from having to create your own models** for common concepts (like students, courses, enrollments, etc.).
 
-### Accessing Relations from the User
+### A. Using the Package Models
 
-Once you have configured the `HasIncadevCore` trait on your `User` model, you can instantly access all related data:
+Instead of creating your own models (e.g., `App\Models\Enrollment`), you should import and use the models provided by this package directly in your controllers, services, and other components.
+
+For example, if you need to manage student profiles or enrollments, you would do so in a controller like this:
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+// 1. Import models directly from the package
+use IncadevUns\CoreDomain\Models\StudentProfile;
+use IncadevUns\CoreDomain\Models\Enrollment;
+use Illuminate\Http\Request;
+
+class SomeController extends Controller
+{
+    /**
+     * Display the enrollments for a specific student.
+     */
+    public function showStudentEnrollments($profileId)
+    {
+        // 2. Use the package model to find the profile
+        $student = StudentProfile::findOrFail($profileId);
+
+        // 3. Access relationships defined in the package
+        $enrollments = $student->enrollments()->where('status', 'active')->get();
+
+        return view('some.view', compact('student', 'enrollments'));
+    }
+
+    /**
+     * Create a new enrollment.
+     */
+    public function storeEnrollment(Request $request)
+    {
+        // 4. Use the package models to create new records
+        $enrollment = Enrollment::create([
+            'student_profile_id' => $request->student_id,
+            'course_id' => $request->course_id,
+            'status' => 'pending',
+            // ... other fields
+        ]);
+
+        return redirect()->route('home')->with('success', 'Enrollment created.');
+    }
+}
+```
+
+### B. Accessing Relations from the User Model
+
+As an added benefit, once you have configured the `HasIncadevCore` trait on your `App\Models\User model`, you can instantly access all this related data directly from the authenticated user:
 
 ```php
 $user = Auth::user();
@@ -131,7 +189,7 @@ $apptsAsStudent = $user->appointmentsAsStudent;
 $apptsAsTeacher = $user->appointmentsAsTeacher;
 ```
 
-### Using Polymorphic Traits
+### C. Using Polymorphic Traits
 
 This package provides powerful traits to add behavior to any model.
 
